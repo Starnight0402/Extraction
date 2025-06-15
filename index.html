@@ -1,20 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Extraction Tuner • Third Wave Coffee</title>
-<script src="vendor/gsap.min.js"></script>
-<script src="vendor/ScrollTrigger.min.js"></script>
-<script src="vendor/lottie.min.js"></script>
-<style>
-  /* (Same CSS from canvas code but trimmed for brevity) */
-  html,body{margin:0}
-  body{font-family:"Montserrat", Arial, sans-serif;}
-  #bg-loop{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.2;z-index:-2}
-</style>
+  <meta charset="UTF-8">
+  <title>Extraction Tuner • Onyx-Style</title>
+
+  <!-- Fonts & libs -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
+
+  <style>
+    :root{
+      --hue:30;
+      --cream-light:hsl(var(--hue),20%,95%);
+      --cream-mid:  hsl(var(--hue),20%,90%);
+      --brown-dark:#4b2e1e;
+      --blue-cold: #4A90E2;
+      --red-hot:   #E94E77;
+      --accent:    #d6a15e;
+      font-family:'Montserrat',sans-serif;
+    }
+    body{
+      margin:0;padding:.5rem;
+      background:radial-gradient(circle at top left,var(--cream-light),var(--cream-mid));
+      transition:background .5s;
+    }
+
+    /* background Drive preview */
+    #bg-loop{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      object-fit:cover;opacity:.2;z-index:-2;border:0;
+      pointer-events:none;
+    }
+
+    /* card */
+    #widget{
+      max-width:700px;margin:3rem auto;padding:1rem;
+      background:var(--cream-mid);border-radius:12px;
+      box-shadow:0 8px 20px rgba(0,0,0,.1);
+      opacity:0;transform:translateY(50px);
+    }
+    .tagline{
+      text-align:center;color:var(--accent);
+      font-size:1.5rem;font-weight:800;margin-bottom:1rem;opacity:0;
+    }
+    h3{
+      text-align:center;color:var(--brown-dark);
+      font-size:2.5rem;font-weight:800;margin:.25rem 0 1rem;
+      opacity:0;transform:translateY(20px);
+    }
+
+    .controls{display:flex;flex-wrap:wrap;gap:1rem;}
+    .control{
+      flex:1 1 45%;display:flex;align-items:center;
+      background:#fff;padding:.5rem;border-radius:8px;
+      box-shadow:inset 0 2px 4px rgba(0,0,0,.05);
+      opacity:0;transform:translateY(20px);
+    }
+    .control:hover{box-shadow:0 4px 12px rgba(0,0,0,.15);}
+    label{
+      flex:1;font-weight:600;color:var(--brown-dark);
+      font-size:1rem;margin-right:.5rem;
+    }
+    label span{font-weight:800;}
+    input[type=range]{
+      -webkit-appearance:none;width:100%;height:6px;border-radius:4px;
+      background:linear-gradient(to right,var(--blue-cold)0%,var(--blue-cold)50%,var(--red-hot)50%,var(--red-hot)100%);
+      outline:none;
+    }
+    input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+      background:var(--brown-dark);cursor:pointer;transition:transform .2s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);}
+    .lottie{width:40px;height:40px;flex-shrink:0;}
+
+    #diagnosis{
+      margin-top:1rem;padding:.75rem;border-radius:6px;text-align:center;
+      font-size:1.1rem;font-weight:600;color:var(--brown-dark);
+      background:linear-gradient(135deg,var(--cream-light),var(--cream-mid));
+      text-shadow:0 1px 2px rgba(0,0,0,.25);opacity:0;
+    }
+    #widget.under   #diagnosis{background:linear-gradient(135deg,var(--blue-cold),var(--accent));color:#fff;}
+    #widget.over    #diagnosis{background:linear-gradient(135deg,var(--red-hot),var(--accent));color:#fff;}
+
+    @media(max-width:600px){
+      .controls{flex-direction:column;}
+      .control{flex:1 1 100%;}
+      h3{font-size:1.8rem;}
+    }
+  </style>
 </head>
 <body>
-  <video id="bg-loop" autoplay muted loop playsinline src="coffee-loop.mp4"></video>
-  <div id="widget">Widget placeholder - insert your existing widget HTML/JS here.</div>
+
+<!-- Google-Drive video preview -->
+<iframe id="bg-loop"
+        src="https://drive.google.com/file/d/1JagIcZQ7xIykVIf4YdxOID2ndk5VrCN_/preview?autoplay=1&mute=1&loop=1"
+        allow="autoplay"></iframe>
+
+<div id="widget">
+  <div class="tagline">Third Wave Coffee</div>
+  <h3>Extraction Tuner</h3>
+
+  <div class="controls">
+    <div class="control">
+      <div id="lot-grind" class="lottie"></div>
+      <label>Grind Size <span id="val-grind">Medium</span></label>
+      <input id="grind" type="range" min="1" max="5" value="3">
+    </div>
+    <div class="control">
+      <div id="lot-time" class="lottie"></div>
+      <label>Brew Time <span id="val-time">Balanced</span></label>
+      <input id="time" type="range" min="1" max="5" value="3">
+    </div>
+    <div class="control">
+      <div id="lot-temp" class="lottie"></div>
+      <label>Water Temp <span id="val-temp">Ideal</span></label>
+      <input id="temp" type="range" min="1" max="5" value="3">
+    </div>
+    <div class="control">
+      <div id="lot-roast" class="lottie"></div>
+      <label>Roast Profile <span id="val-roast">Medium</span></label>
+      <input id="roast" type="range" min="1" max="5" value="3">
+    </div>
+  </div>
+
+  <div id="diagnosis">Adjust a slider to see the verdict…</div>
+</div>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* fade-in card & controls */
+  gsap.timeline({scrollTrigger:{trigger:'#widget',start:'top 80%'}})
+      .to('#widget',{opacity:1,y:0,duration:1})
+      .to('.tagline',{opacity:1,duration:.5},'-=.5')
+      .to('h3',{opacity:1,y:0,duration:.5},'-=.4')
+      .add(()=>{gsap.utils.toArray('.control').forEach((el,i)=>gsap.to(el,{
+        scrollTrigger:{trigger:el,start:'top 90%'},opacity:1,y:0,duration:.6,delay:i*.1
+      }));});
+
+  /* lottie icons play on scroll */
+  ['grind','time','temp','roast'].forEach((k,i)=>{
+    const anim=lottie.loadAnimation({
+      container:document.getElementById(`lot-${k}`),
+      path:[
+        'https://assets9.lottiefiles.com/datafiles/q5jptcEUpNsT4aI/data.json',
+        'https://assets9.lottiefiles.com/packages/lf20_jx3p0gnn.json',
+        'https://assets9.lottiefiles.com/packages/lf20_vf7HdO.json',
+        'https://assets9.lottiefiles.com/packages/lf20_8AkDwa.json'
+      ][i],loop:true,autoplay:false,renderer:'svg'
+    });
+    ScrollTrigger.create({trigger:`#lot-${k}`,start:'top 95%',onEnter:()=>anim.play(),onLeave:()=>anim.pause(),onEnterBack:()=>anim.play(),onLeaveBack:()=>anim.pause()});
+  });
+
+  /* slider logic */
+  const sliders=['grind','time','temp','roast'].map(id=>document.getElementById(id)),
+        labels={grind:['Very Coarse','Coarse','Medium','Fine','Very Fine'],
+                time:['Very Short','Short','Balanced','Long','Very Long'],
+                temp:['Very Low','Low','Ideal','High','Very High'],
+                roast:['Light','Medium-Light','Medium','Medium-Dark','Dark']},
+        vals={grind:document.getElementById('val-grind'),time:document.getElementById('val-time'),
+              temp:document.getElementById('val-temp'),roast:document.getElementById('val-roast')},
+        diag=document.getElementById('diagnosis'),widget=document.getElementById('widget');
+
+  const score=v=>v<=2?-1:v>=4?1:0;
+
+  function update(){
+    let total=0;
+    sliders.forEach(s=>{
+      const v=+s.value;
+      total+=score(v);
+      vals[s.id].textContent=labels[s.id][v-1];
+    });
+
+    let status,details=[];
+    if(total<0){
+      status='UNDER-EXTRACTION';
+      if(score(+grind.value)<0)details.push('Grind too coarse');
+      if(score(+time.value )<0)details.push('Brew too short');
+      if(score(+temp.value )<0)details.push('Water too cool');
+      if(score(+roast.value)<0)details.push('Beans too light');
+    }else if(total>0){
+      status='OVER-EXTRACTION';
+      if(score(+grind.value)>0)details.push('Grind too fine');
+      if(score(+time.value )>0)details.push('Brew too long');
+      if(score(+temp.value )>0)details.push('Water too hot');
+      if(score(+roast.value)>0)details.push('Beans too dark');
+    }else{
+      status='BALANCED ☕️';
+      details=['All levers in the sweet spot!'];
+    }
+
+    widget.className=total<0?'under':total>0?'over':'balanced';
+    diag.innerHTML=`<strong>${status}</strong><br>${details.join('<br>')}`;
+    diag.style.opacity=1;
+  }
+  sliders.forEach(s=>s.addEventListener('input',update));
+  window.addEventListener('load',update);
+</script>
 </body>
 </html>
